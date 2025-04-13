@@ -4,6 +4,7 @@ import { useState } from "react"
 export default function Chat() {
   const [question, setQuestion] = useState("")
   const [answer, setAnswer] = useState("")
+  const [sources, setSources] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
@@ -47,16 +48,24 @@ export default function Chat() {
   const handleSend = async () => {
     if (!question.trim()) return
     setLoading(true)
+    setAnswer("")
+    setSources([])
 
-    const res = await fetch("http://localhost:8000/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question }),
-    })
+    try {
+      const res = await fetch("http://localhost:8000/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      })
 
-    const data = await res.json()
-    setAnswer(data.answer)
-    setLoading(false)
+      const data = await res.json()
+      setAnswer(data.answer)
+      setSources(data.sources)
+    } catch (error) {
+      alert('エラーが発生しました')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -106,9 +115,24 @@ export default function Chat() {
       </button>
 
       {answer && (
-        <div className="p-4 border rounded bg-gray-50">
-          <p className="font-semibold text-gray-700">回答：</p>
-          <p>{answer}</p>
+        <div className="space-y-4">
+          <div className="p-4 border rounded bg-gray-50">
+            <p className="font-semibold text-gray-700">回答：</p>
+            <p>{answer}</p>
+          </div>
+
+          {sources.length > 0 && (
+            <div className="p-4 border rounded bg-gray-50">
+              <p className="font-semibold text-gray-700">参照元：</p>
+              <div className="space-y-2">
+                {sources.map((source, index) => (
+                  <div key={index} className="text-sm text-gray-600">
+                    {source}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

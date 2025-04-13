@@ -44,13 +44,26 @@ def generate_index():
 @app.post("/chat")
 async def chat(request: ChatRequest):
     vectorstore = get_vectorstore()
-    retriever = vectorstore.as_retriever()
-
-    chain = RetrievalQA.from_chain_type(
-        llm=ChatOpenAI(api_key=os.getenv("OPENAI_API_KEY"), temperature=0),
-        retriever=retriever,
+    retriever = vectorstore.as_retriever(
+        search_type="similarity",
+        search_kwargs={"k": 4}
     )
 
-    result = chain.run(request.question)
-    return {"answer": result}
+    chain = RetrievalQA.from_chain_type(
+        llm=ChatOpenAI(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            temperature=0,
+            model_name="gpt-3.5-turbo"
+        ),
+        chain_type="stuff",
+        retriever=retriever,
+        return_source_documents=True
+    )
+
+    result = chain({"query": request.question})
+    
+    return {
+        "answer": result["result"],
+        "sources": [doc.page_content for doc in result["source_documents"]]
+    }
 
