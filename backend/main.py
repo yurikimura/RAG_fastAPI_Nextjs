@@ -3,8 +3,17 @@ from langchain.chains import RetrievalQA
 from langchain_openai import ChatOpenAI
 from qa.loader import get_vectorstore
 import os
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 必要に応じて特定のオリジンを指定
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 vectorstore = get_vectorstore()
 
