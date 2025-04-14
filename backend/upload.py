@@ -4,6 +4,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import os
+import shutil
 
 UPLOAD_DIR = "uploads"
 VECTOR_DB_DIR = "vectorstore"
@@ -15,6 +16,11 @@ os.makedirs(VECTOR_DB_DIR, exist_ok=True)
 
 @router.post("/upload")
 async def upload(file: UploadFile = File(...)):
+    # 既存のベクトルストアを削除
+    if os.path.exists(VECTOR_DB_DIR):
+        shutil.rmtree(VECTOR_DB_DIR)
+    os.makedirs(VECTOR_DB_DIR, exist_ok=True)
+
     file_path = os.path.join(UPLOAD_DIR, file.filename)
 
     # ファイルを保存
