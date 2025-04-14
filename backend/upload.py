@@ -16,7 +16,7 @@ os.makedirs(VECTOR_DB_DIR, exist_ok=True)
 
 @router.post("/upload")
 async def upload(file: UploadFile = File(...)):
-    # 既存のベクトルストアを削除
+    # VECTOR_DB_DIRの中身を削除
     if os.path.exists(VECTOR_DB_DIR):
         shutil.rmtree(VECTOR_DB_DIR)
     os.makedirs(VECTOR_DB_DIR, exist_ok=True)
